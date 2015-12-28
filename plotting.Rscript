@@ -1,0 +1,4 @@
+filename = "C:\\Develop\\R\\ex1\\sample1.txt"
+ds = read.table(filename, header=TRUE)
+ds[,"Date"] = as.Date(ds[,"Date"], format="%Y-%m-%d")
+plot(ds)
