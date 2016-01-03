@@ -1,4 +1,13 @@
-filename = "C:\\Develop\\R\\ex1\\sample1.txt"
+# picking up a file
+filename = "C:\\Develop\\R\\health\\sample1.txt"
+
+# read data.frame from a file
 ds = read.table(filename, header=TRUE)
-ds[,"Date"] = as.Date(ds[,"Date"], format="%Y-%m-%d")
+
+# converting Date column as POSIXlt class
+ds$Date = as.POSIXlt(ds$Date)
+
+# zeroing all the years in dates
+ds$Date$year <- 0
+
 plot(ds)
