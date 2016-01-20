@@ -1,0 +1,4 @@
+﻿# to open script in R, use
+script = file.choose()
+
+source(script)

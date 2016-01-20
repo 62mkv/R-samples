@@ -10,4 +10,13 @@ ds$Date = as.POSIXlt(ds$Date)
 # zeroing all the years in dates
 ds$Date$year <- 0
 
-plot(ds)
+# converting Date column as Date class (this is necessary for proper xlim)
+ds$Date = as.Date(ds$Date)
+
+# this will be range of X axis limits
+xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
+
+# TODO: use different colors for different years
+
+# plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
+plot(ds, xlim=xlims, ylim = c(0,20), xaxs = "i")
