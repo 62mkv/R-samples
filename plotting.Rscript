@@ -1,22 +1,36 @@
+# run this using 
+# source("C:\\Develop\\R\\health\\plotting.Rscript")
+
 # picking up a file
 filename = "C:\\Develop\\R\\health\\sample1.txt"
 
 # read data.frame from a file
 ds = read.table(filename, header=TRUE)
 
-# converting Date column as POSIXlt class
-ds$Date = as.POSIXlt(ds$Date)
+# converting Date column as POSIXlt class (this is necessary to manipulate Date properties, i.e. years)
+ds$Date <- as.POSIXlt(ds$Date)
 
-# zeroing all the years in dates
+# adding separate columns for each year
+# TODO: make it "year agnostic"
+ds$Symptoms2014 <- ifelse (ds$Date$year + 1900 == 2014, ds$SymptPower, "")
+ds$Symptoms2015 <- ifelse (ds$Date$year + 1900 == 2015, ds$SymptPower, "")
+
+# zeroing all the years in Date
 ds$Date$year <- 0
 
 # converting Date column as Date class (this is necessary for proper xlim)
-ds$Date = as.Date(ds$Date)
+ds$Date <- as.Date(ds$Date)
 
-# this will be range of X axis limits
+# removing SymptPower "for all years" column 
+ds$SymptPower <- NULL
+
+# this will be a range of X-axis limits
 xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
 
-# TODO: use different colors for different years
-
 # plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
-plot(ds, xlim=xlims, ylim = c(0,20), xaxs = "i")
+# NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
+plot(ds$Date, ds$Symptoms2014, xlim=xlims, ylim = c(0,20), xaxs = "i", col="red")
+
+ 
+points(ds$Date, ds$Symptoms2015, col="blue")
+
