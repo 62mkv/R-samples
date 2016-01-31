@@ -8,10 +8,14 @@ filename = "C:\\Develop\\R\\health\\sample1.txt"
 ds = read.table(filename, header=TRUE)
 
 # converting Date column as POSIXlt class (this is necessary to manipulate Date properties, i.e. years)
-ds$Date <- as.POSIXlt(ds$Date)
+ds$Date <- as.POSIXlt(ds$Date, format = '%d.%m.%Y')
+
+# calculate "symptoms power" (as opposed to health rate)
+ds$SymptPower <- 10-ds$HealthRate
 
 # adding separate columns for each year
 # TODO: make it "year agnostic"
+ds$Symptoms2013 <- ifelse (ds$Date$year + 1900 == 2013, ds$SymptPower, "")
 ds$Symptoms2014 <- ifelse (ds$Date$year + 1900 == 2014, ds$SymptPower, "")
 ds$Symptoms2015 <- ifelse (ds$Date$year + 1900 == 2015, ds$SymptPower, "")
 
@@ -29,8 +33,6 @@ xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
 
 # plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
 # NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
-plot(ds$Date, ds$Symptoms2014, xlim=xlims, ylim = c(0,20), xaxs = "i", col="red")
-
- 
-points(ds$Date, ds$Symptoms2015, col="blue")
-
+plot(ds$Date, ds$Symptoms2013, xlim=xlims, ylim = c(0,20), xaxs = "i", col="red")
+points(ds$Date, ds$Symptoms2014, col="blue")
+points(ds$Date, ds$Symptoms2015, col="green")
