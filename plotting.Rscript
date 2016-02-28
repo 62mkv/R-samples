@@ -10,14 +10,14 @@ ds = read.table(filename, header=TRUE)
 # converting Date column as POSIXlt class (this is necessary to manipulate Date properties, i.e. years)
 ds$Date <- as.POSIXlt(ds$Date, format = '%d.%m.%Y')
 
+# constructing span of years
+years <- c((min(ds$Date)$year+1900):(max(ds$Date)$year+1900))
+
 # calculate "symptoms power" (as opposed to health rate)
 ds$SymptPower <- 10-ds$HealthRate
 
 # adding separate columns for each year
-# TODO: make it "year agnostic"
-ds$Symptoms2013 <- ifelse (ds$Date$year + 1900 == 2013, ds$SymptPower, "")
-ds$Symptoms2014 <- ifelse (ds$Date$year + 1900 == 2014, ds$SymptPower, "")
-ds$Symptoms2015 <- ifelse (ds$Date$year + 1900 == 2015, ds$SymptPower, "")
+for (year in years) { ds[,as.character(year)] <- ifelse(ds$Date$year + 1900 == year, ds$SymptPower, NA) }
 
 # zeroing all the years in Date
 ds$Date$year <- 0
@@ -31,8 +31,21 @@ ds$SymptPower <- NULL
 # this will be a range of X-axis limits
 xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
 
+# calculating colors for plotting
+cv <- rainbow(length(years))
+
 # plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
 # NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
-plot(ds$Date, ds$Symptoms2013, xlim=xlims, ylim = c(0,20), xaxs = "i", col="red")
-points(ds$Date, ds$Symptoms2014, col="blue")
-points(ds$Date, ds$Symptoms2015, col="green")
+# TODO: add pretty axis names
+# TODO: add every month tick on x axis 
+# TODO: add legend for years
+plot(ds$Date, ds[,as.character(years[1])], xlim=xlims, ylim = c(0,12), xaxs = "i", col=cv[1])
+i = 2
+while (i <= length(years)) {
+ points(ds$Date, ds[,as.character(years[i])], col=cv[i])
+ i <- i+1
+}
+
+# adding a "week number" factor (to use in "group by" operations later)
+ds$Week <- as.factor(strftime(ds$Date,"%U"))
+
