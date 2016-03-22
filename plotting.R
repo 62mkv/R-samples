@@ -17,17 +17,20 @@ ds$Month <- ds$Date$mon + 1
 # constructing span of years
 years <- c((min(ds$Date)$year+1900):(max(ds$Date)$year+1900))
 
-# calculate "symptoms power" (as opposed to health rate)
-ds$SymptPower <- 10-ds$HealthRate
+# calculate severity (aka "symptoms power") (as opposed to health rate)
+ds$Severity <- 10-ds$HealthRate
 
 # adding separate columns for each year
-for (year in years) { ds[,as.character(year)] <- ifelse(ds$Date$year + 1900 == year, ds$SymptPower, NA) }
+for (year in years) { ds[,as.character(year)] <- ifelse(ds$Date$year + 1900 == year, ds$Severity, NA) }
 
 # zeroing all the years in Date
 ds$Date$year <- 0
 
 # converting Date column as Date class (this is necessary for proper xlim)
 ds$Date <- as.Date(ds$Date)
+
+# adding a "week number" factor (to use in "group by" operations later)
+ds$Week <- as.numeric(strftime(ds$Date,"%U"))
 
 # this will be a range of X-axis limits
 xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
@@ -39,19 +42,41 @@ cv <- rainbow(length(years))
 # NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
 # TODO: add every month tick on x axis 
 # TODO: add legend for years
-plot(ds$Date, 
-     ds[,as.character(years[1])], 
-     xaxp = c(as.Date("1900-01-01"), as.Date("1900-12-31"), 22), 
+plot(366,10,
+     xaxp = c(xlims, 12), 
      xlim = xlims, ylim = c(0,12),
-     xlab="Day of year", ylab = "Symptoms severity",
-     xaxs = "i", 
-     col=cv[1])
-i = 2
+     xaxs = "i",
+     axes = FALSE,
+     xlab="Day of year", ylab = "Symptoms severity", main = "Severity per day"
+     )
+i = 1
 while (i <= length(years)) {
  points(ds$Date, ds[,as.character(years[i])], col=cv[i])
  i <- i+1
 }
 
-# adding a "week number" factor (to use in "group by" operations later)
-ds$Week <- as.numeric(strftime(ds$Date,"%U"))
+# preparing for aggregation
+dsw <- ds[c("Week","Year","Severity")]
+dsm <- ds[c("Month","Year","Severity")]
+
+# do the aggregation
+sdsw <- aggregate(x = dsw, by=list(week = dsw$Week, year = dsw$Year), FUN = sum)
+sdsm <- aggregate(x = dsm, by=list(month = dsm$Month, year = dsm$Year), FUN = sum)
+
+# removing erroneously summed-up columns
+sdsw$Year <- NULL
+sdsw$Week <- NULL
+sdsm$Year <- NULL
+sdsm$Month <- NULL
+
+#transforming the aggregated by "week, year" data.frame to a matix for barplot
+week.matrix <- xtabs(Severity ~ year+week, data=sdsw)
+# and plotting it
+frame()
+barplot(week.matrix, col = cv)
+
+#same for months
+month.matrix <- xtabs(Severity ~ year+month, data=sdsm)
+frame()
+barplot(month.matrix, col = cv)
 
