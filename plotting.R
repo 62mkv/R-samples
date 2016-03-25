@@ -32,27 +32,30 @@ ds$Date <- as.Date(ds$Date)
 # adding a "week number" factor (to use in "group by" operations later)
 ds$Week <- as.numeric(strftime(ds$Date,"%U"))
 
-# this will be a range of X-axis limits
-xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
-
 # calculating colors for plotting
 cv <- rainbow(length(years))
 
-# plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
-# NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
-# TODO: add every month tick on x axis 
-# TODO: add legend for years
-plot(366,10,
-     xaxp = c(xlims, 12), 
-     xlim = xlims, ylim = c(0,12),
-     xaxs = "i",
-     axes = FALSE,
-     xlab="Day of year", ylab = "Symptoms severity", main = "Severity per day"
-     )
-i = 1
-while (i <= length(years)) {
- points(ds$Date, ds[,as.character(years[i])], col=cv[i])
- i <- i+1
+plot_severity_by_yearday <- function() {
+
+ # this will be a range of X-axis limits
+ xlims = c(as.Date("1900-01-01"), as.Date("1900-12-31"))
+
+ # plot a graph ('xaxs' is used for more pretty display of X axis marks for this case)
+ # NB: we cannot use plot(ds,..) because it does not display 2 set of Y values properly in that case
+ # TODO: add every month tick on x axis 
+ # TODO: add legend for years
+ plot(366,10,
+      xaxp = c(xlims, 12), 
+      xlim = xlims, ylim = c(0,12),
+      xaxs = "i",
+      axes = FALSE,
+      xlab="Day of year", ylab = "Symptoms severity", main = "Severity per day"
+      )
+ i = 1
+ while (i <= length(years)) {
+  points(ds$Date, ds[,as.character(years[i])], col=cv[i])
+  i <- i+1
+ }
 }
 
 barplot_per_year <- function(period) {
@@ -71,8 +74,11 @@ barplot_per_year <- function(period) {
 # and plotting it
  dev.new()
 #TODO: make sure X axis values are spread evenly
- barplot(period.matrix, col = cv)
+ barplot(period.matrix, col = cv, legend = unique(sdsa[, "year"]), 
+         main = paste ("Sum of severity per",tolower(period),"and year"),
+         axes = FALSE, axisnames = FALSE
+ )
 }
 
 barplot_per_year("Week")
-barplot_per_year("Month")
+#barplot_per_year("Month")
