@@ -55,28 +55,24 @@ while (i <= length(years)) {
  i <- i+1
 }
 
+barplot_per_year <- function(period) {
 # preparing for aggregation
-dsw <- ds[c("Week","Year","Severity")]
-dsm <- ds[c("Month","Year","Severity")]
+ dsa <- ds[c(period, "Year", "Severity")]
 
 # do the aggregation
-sdsw <- aggregate(x = dsw, by=list(week = dsw$Week, year = dsw$Year), FUN = sum)
-sdsm <- aggregate(x = dsm, by=list(month = dsm$Month, year = dsm$Year), FUN = sum)
+ sdsa <- aggregate(x = dsa, by=list(period = dsa[, period], year = dsa$Year), FUN = sum)
 
 # removing erroneously summed-up columns
-sdsw$Year <- NULL
-sdsw$Week <- NULL
-sdsm$Year <- NULL
-sdsm$Month <- NULL
+ sdsa[, period] <- NULL
+ sdsa[, "Year"] <- NULL
 
-#transforming the aggregated by "week, year" data.frame to a matix for barplot
-week.matrix <- xtabs(Severity ~ year+week, data=sdsw)
+# transforming the aggregated by "week, year" data.frame to a matix for barplot
+ period.matrix <- xtabs(Severity ~ year+period, data=sdsa)
 # and plotting it
-frame()
-barplot(week.matrix, col = cv)
+ dev.new()
+#TODO: make sure X axis values are spread evenly
+ barplot(period.matrix, col = cv)
+}
 
-#same for months
-month.matrix <- xtabs(Severity ~ year+month, data=sdsm)
-frame()
-barplot(month.matrix, col = cv)
-
+barplot_per_year("Week")
+barplot_per_year("Month")
